@@ -1,1 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur ISO 7500 / ASTM E4</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      color: #1a1a1a;
+      padding: 24px;
+      max-width: 720px;
+      margin: auto;
+    }
+    h1 { font-size: 1.3rem; margin-bottom: 4px; }
+    p.subtitle { color: #555; font-size: 0.9rem; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th { background: #1a1a1a; color: #fff; padding: 10px; font-size: 0.85rem; text-align: left; }
+    td { padding: 8px 10px; border-bottom: 1px solid #e0e0e0; font-size: 0.9rem; }
+    input[type="number"] {
+      width: 100%; padding: 6px; border: 1px solid #ccc;
+      border-radius: 4px; font-size: 0.9rem; box-sizing: border-box;
+    }
+    .result { font-weight: bold; }
+    .pass { color: #2e7d32; }
+    .fail { color: #c62828; }
+    button {
+      background: #1a1a1a; color: #fff; border: none;
+      padding: 12px 28px; border-radius: 6px; cursor: pointer;
+      font-size: 1rem; margin-bottom: 16px;
+    }
+    button:hover { background: #333; }
+    .note { font-size: 0.8rem; color: #777; margin-top: 16px; }
+  </style>
+</head>
+<body>
 
+<h1>Calculateur d'étalonnage — ISO 7500-1 / ASTM E4</h1>
+<p class="subtitle">Entrez les valeurs mesurées pour chaque palier de force. Le calculateur vérifie la conformité à la classe 1 (±1%).</p>
+
+<button onclick="calculer()">Calculer la conformité</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>Palier (N)</th>
+      <th>Force nominale (N)</th>
+      <th>Force mesurée (N)</th>
+      <th>Erreur relative (%)</th>
+      <th>Conformité (Classe 1)</th>
+    </tr>
+  </thead>
+  <tbody id="tableau-corps">
+  </tbody>
+</table>
+
+<p class="note">⚠️ Ce calculateur est fourni à titre indicatif. Consultez un laboratoire accrédité pour un étalonnage officiel.</p>
+
+<script>
+  const paliers = [500, 1000, 2000, 5000, 10000, 20000, 50000];
+  const limite = 1.0; // Classe 1 = ±1%
+
+  function initTableau() {
+    const tbody = document.getElementById('tableau-corps');
+    tbody.innerHTML = '';
+    paliers.forEach((p, i) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${p}</td>
+          <td>${p}</td>
+          <td><input type="number" id="mesure_${i}" placeholder="ex: ${p}" step="0.1"></td>
+          <td id="erreur_${i}">—</td>
+          <td id="conformite_${i}">—</td>
+        </tr>`;
+    });
+  }
+
+  function calculer() {
+    paliers.forEach((p, i) => {
+      const val = parseFloat(document.getElementById(`mesure_${i}`).value);
+      if (isNaN(val)) {
+        document.getElementById(`erreur_${i}`).textContent = '—';
+        document.getElementById(`conformite_${i}`).textContent = '—';
+        return;
+      }
+      const erreur = ((val - p) / p) * 100;
+      const conforme = Math.abs(erreur) <= limite;
+      document.getElementById(`erreur_${i}`).textContent = erreur.toFixed(3) + ' %';
+      const cellConf = document.getElementById(`conformite_${i}`);
+      cellConf.textContent = conforme ? '✅ Conforme' : '❌ Non conforme';
+      cellConf.className = 'result ' + (conforme ? 'pass' : 'fail');
+    });
+  }
+
+  initTableau();
+</script>
+
+</body>
+</html>
